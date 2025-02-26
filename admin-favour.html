@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Messages</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #111;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        h2 {
+            color: #f00;
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-container, .messages-container {
+            width: 80%;
+            max-width: 400px;
+            background: #222;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+        }
+        .messages-container {
+            width: 100%;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #f00, #b00);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.6);
+        }
+
+        .login-btn:hover {
+            background: linear-gradient(135deg, #b00, #900);
+        }
+
+        .message-card {
+            background: #222;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.7);
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: left;
+            margin-top: 10px;
+        }
+
+        .message-timestamp {
+            font-size: 0.8em;
+            color: #bbb;
+            margin-top: 10px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Page -->
+    <div class="login-container" id="loginContainer">
+        <h2>Admin Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button class="login-btn" onclick="handleLogin()">Login</button>
+    </div>
+
+    <!-- Messages Page (Hidden Initially) -->
+    <div class="hidden" id="messagesPage">
+        <h2>Anonymous Messages</h2>
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages will be added here -->
+        </div>
+    </div>
+
+    <script>
+        let lastMessageId = 0; // Stores the ID of the last message received
+
+        function handleLogin() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            if (username === "Favour" && password === "Sparks") {
+                localStorage.setItem("loggedIn", "true");
+                document.getElementById("loginContainer").classList.add("hidden");
+                document.getElementById("messagesPage").classList.remove("hidden");
+                
+                fetchMessages(true); // Fetch all messages initially
+                setInterval(() => fetchMessages(false), 1000); // Check for new messages every second
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: 'Invalid username or password!',
+                });
+            }
+        }
+
+        function checkLoginStatus() {
+            if (localStorage.getItem("loggedIn") === "true") {
+                document.getElementById("loginContainer").classList.add("hidden");
+                document.getElementById("messagesPage").classList.remove("hidden");
+                fetchMessages(true);
+                setInterval(() => fetchMessages(false), 1000);
+            }
+        }
+
+        async function fetchMessages(initialFetch) {
+            try {
+                const response = await fetch('https://98ab62e9-917c-4295-859a-a501c65afeba-00-p1uga2q3hyl5.spock.replit.dev/messages');
+                const messages = await response.json();
+
+                if (!Array.isArray(messages)) {
+                    console.error("Unexpected response format:", messages);
+                    return;
+                }
+
+                const messagesContainer = document.getElementById("messagesContainer");
+
+                if (initialFetch) {
+                    messagesContainer.innerHTML = ""; 
+                }
+
+                messages.reverse().forEach(msg => {  // Reverse to process oldest to newest
+                    if (msg.id > lastMessageId && msg.content) {  
+                        appendMessage(msg);
+                        lastMessageId = msg.id;  // Update correctly
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+            }
+        }
+
+        function appendMessage(msg) {
+            const messagesContainer = document.getElementById("messagesContainer");
+
+            // Convert timestamp to a readable format
+            const date = new Date(msg.timestamp);
+            date.setHours(date.getHours() + 1); // Adjust hours by +1
+
+            // Format date (e.g., Feb 26, 2025)
+            const formattedDate = date.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "2-digit"
+            });
+
+            // Format time (e.g., 03:45:12 PM)
+            const formattedTime = date.toLocaleString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            });
+
+            // Create the message card
+            const messageCard = document.createElement("div");
+            messageCard.classList.add("message-card");
+            messageCard.innerHTML = `
+                ${msg.content}  
+                <div class="message-timestamp">${formattedDate} - ${formattedTime}</div>
+            `;
+
+            messagesContainer.prepend(messageCard); // ✅ New messages appear at the top
+        }
+
+
+
+
+        // Check if already logged in
+        checkLoginStatus();
+    </script>
+
+</body>
+</html>
