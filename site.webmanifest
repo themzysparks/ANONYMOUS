@@ -1,6 +1,9 @@
 {
   "name": "Anonymous Submission",
   "short_name": "AnonMsg",
+  "start_url": "/index.html",
+  "id": "/",
+  "description": "A secure platform for anonymous submissions.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
