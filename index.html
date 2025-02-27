@@ -443,58 +443,68 @@
     </footer>
 
     <script>
-        function submitMessage() {
-            let message = document.getElementById('anonymousMessage').value.trim();
-            if (message === '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Message cannot be empty!',
-                    background: '#222',
-                    color: '#fff'
-                });
-                return;
-            }
+       function submitMessage() {
+    let message = document.getElementById('anonymousMessage').value.trim();
+    let submitBtn = document.getElementById('submitBtn');
 
-            fetch('https://anonymouslink-a144b18c3128.herokuapp.com/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Message submitted anonymously!',
-                        background: '#222',
-                        color: '#fff'
-                    });
-                    document.getElementById('anonymousMessage').value = '';
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.error || 'Something went wrong!',
-                        background: '#222',
-                        color: '#fff'
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to submit message!',
-                    background: '#222',
-                    color: '#fff'
-                });
-                console.error('Error:', error);
+    if (message === '') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Message cannot be empty!',
+            background: '#222',
+            color: '#fff'
+        });
+        return;
+    }
+
+    // Disable button and show loading animation
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="loader"></span> Sending...`;
+
+    fetch('https://anonymouslink-a144b18c3128.herokuapp.com/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Message submitted anonymously!',
+                background: '#222',
+                color: '#fff'
+            });
+            document.getElementById('anonymousMessage').value = '';
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.error || 'Something went wrong!',
+                background: '#222',
+                color: '#fff'
             });
         }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to submit message!',
+            background: '#222',
+            color: '#fff'
+        });
+        console.error('Error:', error);
+    })
+    .finally(() => {
+        // Re-enable button and reset text
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "Submit";
+    });
+}
+
     </script>
 
 
