@@ -179,7 +179,7 @@
 
             // Convert timestamp to a readable format
             const date = new Date(msg.timestamp);
-            date.setHours(date.getHours() + 1); // Adjust hours by +1
+            date.setHours(date.getHours()); // Adjust hours by +1
 
             // Format date (e.g., Feb 26, 2025)
             const formattedDate = date.toLocaleDateString("en-US", {
