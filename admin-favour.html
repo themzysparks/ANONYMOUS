@@ -220,7 +220,7 @@ async function deleteMessage(messageId) {
 
             if (response.ok) {
                 Swal.fire("Deleted!", "The message has been removed.", "success");
-                fetchMessages(true); // Refresh the messages
+                location.reload(); // Refresh the messages
             } else {
                 Swal.fire("Error!", "Failed to delete message.", "error");
             }
